@@ -1,0 +1,19 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import HeroSection from '../../components/HeroSection.astro';
+import ValueProposition from '../../components/ValueProposition.astro';
+import FeaturedTools from '../../components/FeaturedTools.astro';
+import LatestBlog from '../../components/LatestBlog.astro';
+import Newsletter from '../../components/Newsletter.astro';
+
+const title = 'AI Master 4U - Unlock AI\'s Power, Elevate Knowledge & Earnings';
+const description = 'Your ultimate platform connecting you to in-depth AI knowledge and cutting-edge tools. Discover thousands of useful AI tools and expert insights.';
+---
+
+<Layout title={title} description={description}>
+  <HeroSection />
+  <ValueProposition />
+  <FeaturedTools />
+  <LatestBlog />
+  <Newsletter />
+</Layout>

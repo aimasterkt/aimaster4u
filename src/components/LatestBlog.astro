@@ -1,0 +1,97 @@
+---
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+import { getBlogPosts } from '../utils/airtable';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const posts = await getBlogPosts();
+const latestPosts = posts.slice(0, 2);
+---
+
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-poppins font-bold text-neutral-900 mb-4">
+        {t('blog.title')}
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+      {latestPosts.map((post) => (
+        <article class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 overflow-hidden group">
+          <!-- Thumbnail -->
+          <div class="relative overflow-hidden">
+            {post.fields['Ảnh Thumbnail'] && post.fields['Ảnh Thumbnail'][0] ? (
+              <img 
+                src={post.fields['Ảnh Thumbnail'][0].url} 
+                alt={post.fields[lang === 'vi' ? 'Tiêu đề bài viết (VI)' : 'Tiêu đề bài viết (EN)']}
+                class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+              />
+            ) : (
+              <div class="w-full h-48 bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+                <span class="text-white text-2xl font-bold">AI</span>
+              </div>
+            )}
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors"></div>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6">
+            <!-- Date -->
+            <div class="text-sm text-neutral-500 mb-3">
+              {new Date(post.fields['Ngày đăng']).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-xl font-bold text-neutral-900 mb-3 group-hover:text-primary-600 transition-colors line-clamp-2">
+              {post.fields[lang === 'vi' ? 'Tiêu đề bài viết (VI)' : 'Tiêu đề bài viết (EN)']}
+            </h3>
+
+            <!-- Categories -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              {post.fields['Danh mục Blog'] && post.fields['Danh mục Blog'].slice(0, 2).map((category) => (
+                <span class="bg-primary-100 text-primary-700 text-xs px-2 py-1 rounded-full">
+                  {category}
+                </span>
+              ))}
+            </div>
+
+            <!-- Meta Description -->
+            <p class="text-neutral-600 text-sm mb-4 line-clamp-3">
+              {post.fields[lang === 'vi' ? 'Mô tả Meta (VI)' : 'Mô tả Meta (EN)']}
+            </p>
+
+            <!-- Read More Button -->
+            <a 
+              href={`/blog/${post.fields[lang === 'vi' ? 'Slug (VI)' : 'Slug (EN)']}`}
+              class="inline-flex items-center text-primary-600 hover:text-primary-700 font-semibold text-sm transition-colors"
+            >
+              {t('blog.read_more')}
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <!-- CTA to see all blog posts -->
+    <div class="text-center">
+      <a 
+        href="/blog" 
+        class="inline-flex items-center justify-center bg-accent-600 hover:bg-accent-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+      >
+        {t('blog.view_all')}
+        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

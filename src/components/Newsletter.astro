@@ -1,0 +1,81 @@
+---
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section class="py-16 bg-gradient-to-br from-primary-600 to-accent-600">
+  <div class="container mx-auto px-4">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-poppins font-bold text-white mb-4">
+        {t('newsletter.title')}
+      </h2>
+      
+      <p class="text-primary-100 mb-6 text-lg">
+        {t('newsletter.description')}
+      </p>
+
+      <!-- Lead Magnet -->
+      <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-8 border border-white/20">
+        <div class="flex items-center justify-center mb-2">
+          <svg class="w-6 h-6 text-yellow-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          <span class="text-yellow-300 font-semibold">
+            {lang === 'vi' ? 'Ưu đài đặc biệt' : 'Special Bonus'}
+          </span>
+        </div>
+        <p class="text-white font-medium">
+          {t('newsletter.lead_magnet')}
+        </p>
+      </div>
+
+      <!-- Newsletter Form -->
+      <form class="newsletter-form max-w-md mx-auto">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <input 
+            type="email" 
+            placeholder={t('newsletter.email_placeholder')}
+            class="flex-1 px-4 py-3 rounded-lg border border-white/20 bg-white/10 backdrop-blur-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50"
+            required
+          />
+          <button 
+            type="submit"
+            class="bg-white hover:bg-neutral-100 text-primary-600 px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            {t('newsletter.subscribe')}
+          </button>
+        </div>
+      </form>
+
+      <!-- Privacy Notice -->
+      <p class="text-primary-100 text-sm mt-4">
+        {lang === 'vi' 
+          ? 'Chúng tôi tôn trọng quyền riêng tư của bạn. Có thể hủy đăng ký bất cứ lúc nào.'
+          : 'We respect your privacy. You can unsubscribe at any time.'
+        }
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Newsletter form submission
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('.newsletter-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = form.querySelector('input[type="email"]').value;
+        
+        // Here you would typically send the email to your newsletter service
+        // For now, we'll just show a success message
+        alert('Thank you for subscribing! We\'ll send you the free ebook soon.');
+        
+        // Reset form
+        form.reset();
+      });
+    }
+  });
+</script>

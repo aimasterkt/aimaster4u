@@ -1,0 +1,76 @@
+---
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-poppins font-bold text-neutral-900 mb-8">
+        {t('value.title')}
+      </h2>
+      
+      <p class="text-lg text-neutral-600 mb-12 max-w-2xl mx-auto">
+        {t('value.description')}
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Benefit 1 -->
+        <div class="bg-gradient-to-br from-primary-50 to-primary-100 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105">
+          <div class="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">
+            {t('value.benefit1')}
+          </h3>
+          <p class="text-neutral-600">
+            {lang === 'vi' 
+              ? 'Cập nhật thông tin AI mới nhất từ các chuyên gia hàng đầu'
+              : 'Stay updated with the latest AI insights from top experts'
+            }
+          </p>
+        </div>
+
+        <!-- Benefit 2 -->
+        <div class="bg-gradient-to-br from-accent-50 to-accent-100 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105">
+          <div class="w-16 h-16 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">
+            {t('value.benefit2')}
+          </h3>
+          <p class="text-neutral-600">
+            {lang === 'vi' 
+              ? 'Mỗi công cụ được đánh giá kỹ lưỡng về chất lượng và hiệu quả'
+              : 'Every tool is carefully evaluated for quality and effectiveness'
+            }
+          </p>
+        </div>
+
+        <!-- Benefit 3 -->
+        <div class="bg-gradient-to-br from-primary-50 to-accent-50 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105">
+          <div class="w-16 h-16 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-neutral-900 mb-4">
+            {t('value.benefit3')}
+          </h3>
+          <p class="text-neutral-600">
+            {lang === 'vi' 
+              ? 'Hướng dẫn cách sử dụng AI để tối ưu hóa thu nhập và hiệu quả'
+              : 'Learn how to leverage AI to optimize income and efficiency'
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

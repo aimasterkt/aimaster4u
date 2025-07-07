@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HeroSection from '../components/HeroSection.astro';
+import ValueProposition from '../components/ValueProposition.astro';
+import FeaturedTools from '../components/FeaturedTools.astro';
+import LatestBlog from '../components/LatestBlog.astro';
+import Newsletter from '../components/Newsletter.astro';
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const title = lang === 'vi' 
+  ? 'AI Master 4U - Khám phá sức mạnh AI, Nâng tầm tri thức & Thu nhập'
+  : 'AI Master 4U - Unlock AI\'s Power, Elevate Knowledge & Earnings';
+
+const description = lang === 'vi'
+  ? 'Nền tảng toàn diện kết nối bạn với kiến thức chuyên sâu và công cụ AI đỉnh cao. Khám phá hàng ngàn công cụ AI hữu ích và blog chuyên sâu.'
+  : 'Your ultimate platform connecting you to in-depth AI knowledge and cutting-edge tools. Discover thousands of useful AI tools and expert insights.';
+---
+
+<Layout title={title} description={description}>
+  <HeroSection />
+  <ValueProposition />
+  <FeaturedTools />
+  <LatestBlog />
+  <Newsletter />
+</Layout>

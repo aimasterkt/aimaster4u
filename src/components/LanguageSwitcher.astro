@@ -1,0 +1,32 @@
+---
+import { languages } from '../utils/i18n';
+
+const currentUrl = Astro.url;
+const currentLang = currentUrl.pathname.startsWith('/en') ? 'en' : 'vi';
+const basePath = currentUrl.pathname.replace(/^\/(en|vi)/, '') || '/';
+---
+
+<div class="language-switcher">
+  <div class="flex items-center space-x-1 bg-white rounded-xl shadow-soft border border-neutral-200 p-1">
+    {Object.entries(languages).map(([lang, label]) => (
+      <a
+        href={lang === 'vi' ? basePath : `/en${basePath}`}
+        class={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+          currentLang === lang 
+            ? 'bg-primary-500 text-white shadow-medium' 
+            : 'text-neutral-600 hover:text-primary-500 hover:bg-primary-50'
+        }`}
+        aria-label={`Switch to ${label}`}
+      >
+        {lang.toUpperCase()}
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .language-switcher {
+    display: flex;
+    align-items: center;
+  }
+</style>

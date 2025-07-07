@@ -1,0 +1,86 @@
+---
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-200 shadow-soft">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <a href={lang === 'vi' ? '/' : '/en'} class="text-2xl font-poppins font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent hover:from-primary-700 hover:to-accent-700 transition-all duration-200">
+          AI Master 4U
+        </a>
+      </div>
+
+      <!-- Mobile menu button -->
+      <button class="md:hidden mobile-menu-button p-2 rounded-xl hover:bg-neutral-100 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a href={lang === 'vi' ? '/' : '/en'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors relative group">
+          {t('nav.home')}
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-200 group-hover:w-full"></span>
+        </a>
+        <a href={lang === 'vi' ? '/blog' : '/en/blog'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors relative group">
+          {t('nav.blog')}
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-200 group-hover:w-full"></span>
+        </a>
+        <a href={lang === 'vi' ? '/aitoolhub' : '/en/aitoolhub'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors relative group">
+          {t('nav.toolhub')}
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-200 group-hover:w-full"></span>
+        </a>
+        <a href={lang === 'vi' ? '/contact' : '/en/contact'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors relative group">
+          {t('nav.contact')}
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-200 group-hover:w-full"></span>
+        </a>
+        <LanguageSwitcher />
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-menu hidden md:hidden mt-4 pb-4">
+      <div class="flex flex-col space-y-3">
+        <a href={lang === 'vi' ? '/' : '/en'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors py-2 px-4 rounded-lg hover:bg-primary-50">
+          {t('nav.home')}
+        </a>
+        <a href={lang === 'vi' ? '/blog' : '/en/blog'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors py-2 px-4 rounded-lg hover:bg-primary-50">
+          {t('nav.blog')}
+        </a>
+        <a href={lang === 'vi' ? '/aitoolhub' : '/en/aitoolhub'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors py-2 px-4 rounded-lg hover:bg-primary-50">
+          {t('nav.toolhub')}
+        </a>
+        <a href={lang === 'vi' ? '/contact' : '/en/contact'} class="text-neutral-700 hover:text-primary-600 font-semibold transition-colors py-2 px-4 rounded-lg hover:bg-primary-50">
+          {t('nav.contact')}
+        </a>
+        <div class="pt-3 border-t border-neutral-200">
+          <LanguageSwitcher />
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  // Mobile menu toggle
+  const mobileMenuButton = document.querySelector('.mobile-menu-button');
+  const mobileMenu = document.querySelector('.mobile-menu');
+  
+  mobileMenuButton?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!mobileMenuButton?.contains(e.target) && !mobileMenu?.contains(e.target)) {
+      mobileMenu?.classList.add('hidden');
+    }
+  });
+</script>
