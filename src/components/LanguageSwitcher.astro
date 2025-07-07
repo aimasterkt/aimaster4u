@@ -4,23 +4,35 @@ import { languages } from '../utils/i18n';
 const currentUrl = Astro.url;
 const currentLang = currentUrl.pathname.startsWith('/en') ? 'en' : 'vi';
 const basePath = currentUrl.pathname.replace(/^\/(en|vi)/, '') || '/';
+
+// Generate proper URLs for language switching
+const baseUrl = Astro.site?.toString() || 'https://aimaster4u.com';
+const viUrl = basePath === '/' ? '/' : basePath;
+const enUrl = basePath === '/' ? '/en' : `/en${basePath}`;
 ---
 
 <div class="language-switcher">
   <div class="flex items-center space-x-1 bg-white rounded-xl shadow-soft border border-neutral-200 p-1">
-    {Object.entries(languages).map(([lang, label]) => (
-      <a
-        href={lang === 'vi' ? basePath : `/en${basePath}`}
-        class={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-          currentLang === lang 
-            ? 'bg-primary-500 text-white shadow-medium' 
-            : 'text-neutral-600 hover:text-primary-500 hover:bg-primary-50'
-        }`}
-        aria-label={`Switch to ${label}`}
-      >
-        {lang.toUpperCase()}
-      </a>
-    ))}
+    {Object.entries(languages).map(([lang, label]) => {
+      const href = lang === 'vi' ? viUrl : enUrl;
+      const isActive = currentLang === lang;
+      
+      return (
+        <a
+          href={href}
+          class={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            isActive 
+              ? 'bg-primary-500 text-white shadow-medium' 
+              : 'text-neutral-600 hover:text-primary-500 hover:bg-primary-50'
+          }`}
+          aria-label={`Switch to ${label}`}
+          data-lang-switch={lang}
+          hreflang={lang}
+        >
+          {lang.toUpperCase()}
+        </a>
+      );
+    })}
   </div>
 </div>
 
@@ -29,4 +41,110 @@ const basePath = currentUrl.pathname.replace(/^\/(en|vi)/, '') || '/';
     display: flex;
     align-items: center;
   }
+
+  /* Enhanced accessibility for language switcher */
+  .language-switcher a:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  /* Smooth transitions */
+  .language-switcher a {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .language-switcher a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .language-switcher a:hover::before {
+    left: 100%;
+  }
+
+  /* Mobile responsive adjustments */
+  @media (max-width: 640px) {
+    .language-switcher {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .language-switcher > div {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 </style>
+
+<script>
+  // Enhanced language switching functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const languageSwitchers = document.querySelectorAll('[data-lang-switch]');
+    
+    languageSwitchers.forEach(switcher => {
+      switcher.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const targetLang = switcher.getAttribute('data-lang-switch');
+        const currentPath = window.location.pathname;
+        const currentSearch = window.location.search;
+        const currentHash = window.location.hash;
+        
+        // Determine new path based on target language
+        let newPath;
+        if (targetLang === 'vi') {
+          // Remove /en prefix for Vietnamese
+          newPath = currentPath.replace(/^\/en/, '') || '/';
+        } else {
+          // Add /en prefix for English
+          newPath = currentPath.startsWith('/en') ? currentPath : `/en${currentPath}`;
+        }
+        
+        // Preserve query parameters and hash
+        const newUrl = newPath + currentSearch + currentHash;
+        
+        // Store language preference
+        localStorage.setItem('preferred_language', targetLang);
+        
+        // Add loading state
+        switcher.style.opacity = '0.7';
+        switcher.style.pointerEvents = 'none';
+        
+        // Navigate to new URL
+        window.location.href = newUrl;
+      });
+    });
+
+    // Auto-redirect based on browser language preference (first visit only)
+    const hasVisited = localStorage.getItem('has_visited');
+    const preferredLang = localStorage.getItem('preferred_language');
+    
+    if (!hasVisited && !preferredLang) {
+      const browserLang = navigator.language || navigator.languages[0];
+      const isVietnamese = browserLang.startsWith('vi');
+      const currentPath = window.location.pathname;
+      
+      // Only redirect if we're on the wrong language version
+      if (isVietnamese && currentPath.startsWith('/en')) {
+        const newPath = currentPath.replace(/^\/en/, '') || '/';
+        localStorage.setItem('preferred_language', 'vi');
+        localStorage.setItem('has_visited', 'true');
+        window.location.replace(newPath);
+      } else if (!isVietnamese && !currentPath.startsWith('/en') && currentPath !== '/') {
+        const newPath = `/en${currentPath}`;
+        localStorage.setItem('preferred_language', 'en');
+        localStorage.setItem('has_visited', 'true');
+        window.location.replace(newPath);
+      } else {
+        localStorage.setItem('has_visited', 'true');
+      }
+    }
+  });
+</script>

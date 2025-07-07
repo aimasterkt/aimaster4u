@@ -1,0 +1,641 @@
+---
+import { getLangFromUrl, useTranslations } from '../utils/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<!-- Subscription Popup Component -->
+<div id="subscription-popup" class="subscription-popup hidden">
+  <!-- Backdrop -->
+  <div class="popup-backdrop" id="popup-backdrop"></div>
+  
+  <!-- Popup Content -->
+  <div class="popup-content">
+    <!-- Close Button -->
+    <button class="popup-close" id="popup-close" aria-label={t('popup.close')}>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <!-- Popup Header -->
+    <div class="popup-header">
+      <div class="popup-icon">
+        <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+      </div>
+      <h2 class="popup-title">{t('popup.title')}</h2>
+      <p class="popup-subtitle">{t('popup.subtitle')}</p>
+    </div>
+
+    <!-- Lead Magnet -->
+    <div class="popup-lead-magnet">
+      <div class="lead-magnet-badge">
+        <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+        <span>{t('popup.bonus')}</span>
+      </div>
+      <p class="lead-magnet-text">{t('popup.lead_magnet')}</p>
+    </div>
+
+    <!-- Subscription Form -->
+    <form class="popup-form" id="subscription-form">
+      <div class="form-group">
+        <label for="popup-email" class="sr-only">{t('popup.email_label')}</label>
+        <input 
+          type="email" 
+          id="popup-email" 
+          name="email"
+          placeholder={t('popup.email_placeholder')}
+          class="form-input"
+          required
+          autocomplete="email"
+        />
+        <div class="error-message" id="email-error"></div>
+      </div>
+
+      <button type="submit" class="submit-button" id="submit-button">
+        <span class="button-text">{t('popup.subscribe_button')}</span>
+        <span class="button-loading hidden">
+          <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {t('popup.subscribing')}
+        </span>
+      </button>
+    </form>
+
+    <!-- Success Message -->
+    <div class="success-message hidden" id="success-message">
+      <div class="success-icon">
+        <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="success-title">{t('popup.success_title')}</h3>
+      <p class="success-text">{t('popup.success_message')}</p>
+    </div>
+
+    <!-- Privacy Notice -->
+    <div class="popup-privacy">
+      <p class="privacy-text">{t('popup.privacy_notice')}</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Popup Styles */
+  .subscription-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .subscription-popup.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .popup-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  .popup-content {
+    position: relative;
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .subscription-popup.show .popup-content {
+    transform: scale(1) translateY(0);
+  }
+
+  .popup-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .popup-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .popup-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .popup-icon {
+    margin: 0 auto 1rem;
+    width: fit-content;
+  }
+
+  .popup-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .popup-subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .popup-lead-magnet {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .lead-magnet-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f59e0b;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .lead-magnet-text {
+    color: #92400e;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .popup-form {
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+    background: #fafafa;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-input.error {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  .error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    min-height: 1.25rem;
+  }
+
+  .submit-button {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.5rem;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .submit-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+  }
+
+  .submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .button-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .success-message {
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .success-icon {
+    margin: 0 auto 1rem;
+    width: fit-content;
+  }
+
+  .success-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #059669;
+    margin-bottom: 0.5rem;
+  }
+
+  .success-text {
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  .popup-privacy {
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .privacy-text {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    line-height: 1.4;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 640px) {
+    .subscription-popup {
+      padding: 0.5rem;
+    }
+
+    .popup-content {
+      padding: 1.5rem;
+      border-radius: 1rem;
+    }
+
+    .popup-title {
+      font-size: 1.25rem;
+    }
+
+    .popup-subtitle {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Animation Classes */
+  .hidden {
+    display: none !important;
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<script>
+  // Popup Subscription Form Logic
+  class SubscriptionPopup {
+    constructor() {
+      this.popup = document.getElementById('subscription-popup');
+      this.backdrop = document.getElementById('popup-backdrop');
+      this.closeButton = document.getElementById('popup-close');
+      this.form = document.getElementById('subscription-form');
+      this.emailInput = document.getElementById('popup-email');
+      this.submitButton = document.getElementById('submit-button');
+      this.buttonText = this.submitButton?.querySelector('.button-text');
+      this.buttonLoading = this.submitButton?.querySelector('.button-loading');
+      this.successMessage = document.getElementById('success-message');
+      this.emailError = document.getElementById('email-error');
+      
+      this.isShown = false;
+      this.showDelay = 25000; // 25 seconds
+      this.cookieName = 'subscription_popup_shown';
+      this.cookieExpiry = 7; // 7 days
+      
+      this.init();
+    }
+
+    init() {
+      // Check if popup should be shown
+      if (!this.shouldShowPopup()) {
+        return;
+      }
+
+      // Set up event listeners
+      this.setupEventListeners();
+      
+      // Show popup after delay
+      setTimeout(() => {
+        this.showPopup();
+      }, this.showDelay);
+    }
+
+    shouldShowPopup() {
+      // Check if popup was already shown (cookie check)
+      const popupShown = this.getCookie(this.cookieName);
+      if (popupShown) {
+        return false;
+      }
+
+      // Check if user is on mobile (optional - you might want different behavior)
+      const isMobile = window.innerWidth < 768;
+      
+      // Don't show on certain pages (optional)
+      const currentPath = window.location.pathname;
+      const excludedPaths = ['/contact', '/en/contact'];
+      if (excludedPaths.includes(currentPath)) {
+        return false;
+      }
+
+      return true;
+    }
+
+    setupEventListeners() {
+      // Close popup events
+      this.closeButton?.addEventListener('click', () => this.hidePopup());
+      this.backdrop?.addEventListener('click', () => this.hidePopup());
+      
+      // ESC key to close
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.isShown) {
+          this.hidePopup();
+        }
+      });
+
+      // Form submission
+      this.form?.addEventListener('submit', (e) => this.handleSubmit(e));
+
+      // Real-time email validation
+      this.emailInput?.addEventListener('input', () => this.validateEmail());
+      this.emailInput?.addEventListener('blur', () => this.validateEmail());
+    }
+
+    showPopup() {
+      if (!this.popup || this.isShown) return;
+      
+      this.popup.classList.remove('hidden');
+      // Force reflow
+      this.popup.offsetHeight;
+      this.popup.classList.add('show');
+      this.isShown = true;
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+      
+      // Focus on email input
+      setTimeout(() => {
+        this.emailInput?.focus();
+      }, 300);
+
+      // Track popup view (analytics)
+      this.trackEvent('popup_viewed');
+    }
+
+    hidePopup() {
+      if (!this.popup || !this.isShown) return;
+      
+      this.popup.classList.remove('show');
+      setTimeout(() => {
+        this.popup.classList.add('hidden');
+        this.isShown = false;
+      }, 300);
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+      
+      // Set cookie to prevent showing again
+      this.setCookie(this.cookieName, 'true', this.cookieExpiry);
+
+      // Track popup close (analytics)
+      this.trackEvent('popup_closed');
+    }
+
+    async handleSubmit(e) {
+      e.preventDefault();
+      
+      if (!this.validateEmail()) {
+        return;
+      }
+
+      const email = this.emailInput?.value.trim();
+      if (!email) return;
+
+      // Show loading state
+      this.setLoadingState(true);
+
+      try {
+        // Submit to your email service (replace with your endpoint)
+        const response = await this.submitEmail(email);
+        
+        if (response.success) {
+          this.showSuccess();
+          this.trackEvent('subscription_success', { email });
+        } else {
+          throw new Error(response.message || 'Subscription failed');
+        }
+      } catch (error) {
+        console.error('Subscription error:', error);
+        this.showError(error.message || 'An error occurred. Please try again.');
+        this.trackEvent('subscription_error', { error: error.message });
+      } finally {
+        this.setLoadingState(false);
+      }
+    }
+
+    async submitEmail(email) {
+      // Replace this with your actual email service integration
+      // Examples: Mailchimp, ConvertKit, EmailOctopus, etc.
+      
+      // Mock API call for demonstration
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // Simulate success (replace with real API call)
+          resolve({ success: true, message: 'Subscription successful' });
+        }, 1500);
+      });
+
+      // Example real implementation:
+      /*
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email,
+          language: document.documentElement.lang || 'vi',
+          source: 'popup'
+        }),
+      });
+      
+      return await response.json();
+      */
+    }
+
+    validateEmail() {
+      const email = this.emailInput?.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (!email) {
+        this.showEmailError('Email is required');
+        return false;
+      }
+      
+      if (!emailRegex.test(email)) {
+        this.showEmailError('Please enter a valid email address');
+        return false;
+      }
+      
+      this.clearEmailError();
+      return true;
+    }
+
+    showEmailError(message) {
+      if (this.emailError) {
+        this.emailError.textContent = message;
+      }
+      this.emailInput?.classList.add('error');
+    }
+
+    clearEmailError() {
+      if (this.emailError) {
+        this.emailError.textContent = '';
+      }
+      this.emailInput?.classList.remove('error');
+    }
+
+    showError(message) {
+      // You can implement a toast notification or inline error display
+      alert(message); // Simple fallback
+    }
+
+    showSuccess() {
+      // Hide form and show success message
+      if (this.form) {
+        this.form.style.display = 'none';
+      }
+      if (this.successMessage) {
+        this.successMessage.classList.remove('hidden');
+      }
+
+      // Auto-close popup after success
+      setTimeout(() => {
+        this.hidePopup();
+      }, 3000);
+    }
+
+    setLoadingState(loading) {
+      if (!this.submitButton) return;
+      
+      this.submitButton.disabled = loading;
+      
+      if (loading) {
+        this.buttonText?.classList.add('hidden');
+        this.buttonLoading?.classList.remove('hidden');
+      } else {
+        this.buttonText?.classList.remove('hidden');
+        this.buttonLoading?.classList.add('hidden');
+      }
+    }
+
+    // Cookie utilities
+    setCookie(name, value, days) {
+      const expires = new Date();
+      expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+      document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+    }
+
+    getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    // Analytics tracking
+    trackEvent(eventName, properties = {}) {
+      // Integrate with your analytics service
+      // Examples: Google Analytics, Mixpanel, Amplitude, etc.
+      
+      // Google Analytics 4 example:
+      if (typeof gtag !== 'undefined') {
+        gtag('event', eventName, {
+          event_category: 'subscription_popup',
+          ...properties
+        });
+      }
+
+      // Console log for debugging
+      console.log('Event tracked:', eventName, properties);
+    }
+  }
+
+  // Initialize popup when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new SubscriptionPopup();
+  });
+</script>

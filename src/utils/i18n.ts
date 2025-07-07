@@ -44,6 +44,20 @@ export const translations = {
     'newsletter.email_placeholder': 'Nhập email của bạn',
     'newsletter.subscribe': 'Đăng ký ngay',
     
+    // Subscription Popup
+    'popup.title': 'Nhận Ebook AI Miễn Phí!',
+    'popup.subtitle': 'Khám phá 10 công cụ AI đột phá có thể thay đổi cách bạn làm việc và tăng thu nhập.',
+    'popup.bonus': 'Ưu đãi đặc biệt',
+    'popup.lead_magnet': 'Ebook "10 Công Cụ AI Đột Phá Mọi Ngành Nghề" - Trị giá 500.000đ, hoàn toàn MIỄN PHÍ!',
+    'popup.email_label': 'Địa chỉ email',
+    'popup.email_placeholder': 'Nhập email của bạn để nhận ebook',
+    'popup.subscribe_button': 'Tải Ebook Miễn Phí Ngay!',
+    'popup.subscribing': 'Đang xử lý...',
+    'popup.success_title': 'Cảm ơn bạn!',
+    'popup.success_message': 'Ebook đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (kể cả thư mục spam).',
+    'popup.privacy_notice': 'Chúng tôi tôn trọng quyền riêng tư của bạn. Có thể hủy đăng ký bất cứ lúc nào.',
+    'popup.close': 'Đóng',
+    
     // Footer
     'footer.copyright': '© 2025 AI Master 4U. Tất cả quyền được bảo lưu.',
     'footer.privacy': 'Chính sách bảo mật',
@@ -71,6 +85,20 @@ export const translations = {
     'contact.message': 'Tin nhắn',
     'contact.send': 'Gửi tin nhắn',
     'contact.email_address': 'contact@aimaster4u.com',
+    
+    // Form Validation Messages
+    'validation.required': 'Trường này là bắt buộc',
+    'validation.email_invalid': 'Vui lòng nhập địa chỉ email hợp lệ',
+    'validation.email_required': 'Email là bắt buộc',
+    'validation.name_required': 'Họ tên là bắt buộc',
+    'validation.message_required': 'Tin nhắn là bắt buộc',
+    'validation.subject_required': 'Chủ đề là bắt buộc',
+    
+    // Success/Error Messages
+    'message.subscription_success': 'Đăng ký thành công! Cảm ơn bạn đã tham gia.',
+    'message.subscription_error': 'Có lỗi xảy ra. Vui lòng thử lại.',
+    'message.contact_success': 'Tin nhắn đã được gửi thành công! Chúng tôi sẽ phản hồi sớm nhất.',
+    'message.contact_error': 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.',
     
     // Categories
     'category.content_creation': 'Tạo Nội dung',
@@ -120,6 +148,20 @@ export const translations = {
     'newsletter.email_placeholder': 'Enter your email',
     'newsletter.subscribe': 'Subscribe Now',
     
+    // Subscription Popup
+    'popup.title': 'Get Your Free AI Ebook!',
+    'popup.subtitle': 'Discover 10 breakthrough AI tools that can transform how you work and boost your income.',
+    'popup.bonus': 'Special Bonus',
+    'popup.lead_magnet': 'Ebook "10 Breakthrough AI Tools for Every Industry" - Worth $20, completely FREE!',
+    'popup.email_label': 'Email address',
+    'popup.email_placeholder': 'Enter your email to get the ebook',
+    'popup.subscribe_button': 'Get Free Ebook Now!',
+    'popup.subscribing': 'Processing...',
+    'popup.success_title': 'Thank You!',
+    'popup.success_message': 'The ebook has been sent to your email. Please check your inbox (including spam folder).',
+    'popup.privacy_notice': 'We respect your privacy. You can unsubscribe at any time.',
+    'popup.close': 'Close',
+    
     // Footer
     'footer.copyright': '© 2025 AI Master 4U. All rights reserved.',
     'footer.privacy': 'Privacy Policy',
@@ -148,6 +190,20 @@ export const translations = {
     'contact.send': 'Send Message',
     'contact.email_address': 'contact@aimaster4u.com',
     
+    // Form Validation Messages
+    'validation.required': 'This field is required',
+    'validation.email_invalid': 'Please enter a valid email address',
+    'validation.email_required': 'Email is required',
+    'validation.name_required': 'Name is required',
+    'validation.message_required': 'Message is required',
+    'validation.subject_required': 'Subject is required',
+    
+    // Success/Error Messages
+    'message.subscription_success': 'Subscription successful! Thank you for joining us.',
+    'message.subscription_error': 'An error occurred. Please try again.',
+    'message.contact_success': 'Message sent successfully! We will respond as soon as possible.',
+    'message.contact_error': 'An error occurred while sending the message. Please try again.',
+    
     // Categories
     'category.content_creation': 'Content Creation',
     'category.image_generation': 'Image Generation',
@@ -170,4 +226,62 @@ export function useTranslations(lang: keyof typeof languages) {
   return function t(key: string) {
     return translations[lang][key] || translations[defaultLang][key] || key;
   }
+}
+
+// Language persistence utilities
+export function setLanguagePreference(lang: string) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('preferred_language', lang);
+    document.documentElement.lang = lang;
+  }
+}
+
+export function getLanguagePreference(): string {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('preferred_language') || defaultLang;
+  }
+  return defaultLang;
+}
+
+// Validate Vietnamese characters encoding
+export function validateVietnameseText(text: string): boolean {
+  // Check for proper Vietnamese character encoding
+  const vietnameseChars = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+  return vietnameseChars.test(text);
+}
+
+// Get appropriate date format for language
+export function getDateFormat(lang: string): Intl.DateTimeFormatOptions {
+  const formats = {
+    vi: {
+      year: 'numeric' as const,
+      month: 'long' as const,
+      day: 'numeric' as const,
+    },
+    en: {
+      year: 'numeric' as const,
+      month: 'long' as const,
+      day: 'numeric' as const,
+    }
+  };
+  
+  return formats[lang as keyof typeof formats] || formats.vi;
+}
+
+// Get appropriate number format for language
+export function getNumberFormat(lang: string): Intl.NumberFormatOptions {
+  const formats = {
+    vi: {
+      style: 'decimal' as const,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    },
+    en: {
+      style: 'decimal' as const,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }
+  };
+  
+  return formats[lang as keyof typeof formats] || formats.vi;
 }

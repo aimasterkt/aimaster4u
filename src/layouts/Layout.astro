@@ -1,17 +1,19 @@
 ---
-import { getLangFromUrl, useTranslations } from '../utils/i18n';
+import { getLangFromUrl, useTranslations, getLanguagePreference } from '../utils/i18n';
 import { SEO } from 'astro-seo';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import SubscriptionPopup from '../components/SubscriptionPopup.astro';
 
 interface Props {
   title: string;
   description?: string;
   image?: string;
   type?: 'website' | 'article';
+  showPopup?: boolean;
 }
 
-const { title, description, image, type = 'website' } = Astro.props;
+const { title, description, image, type = 'website', showPopup = true } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
@@ -21,22 +23,36 @@ const defaultDescription = lang === 'vi'
 
 const seoDescription = description || defaultDescription;
 const seoImage = image || '/og-image.jpg';
+
+// Generate alternate URLs for language switching
+const currentPath = Astro.url.pathname;
+const baseUrl = Astro.site?.toString() || 'https://aimaster4u.com';
+
+// Remove language prefix to get base path
+const basePath = currentPath.replace(/^\/(en|vi)/, '') || '/';
+const viUrl = `${baseUrl}${basePath}`;
+const enUrl = `${baseUrl}/en${basePath}`;
 ---
 
 <!DOCTYPE html>
-<html lang={lang}>
+<html lang={lang} dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="generator" content={Astro.generator} />
   
-  <!-- Google Fonts -->
+  <!-- Language and encoding meta tags -->
+  <meta http-equiv="Content-Language" content={lang} />
+  <meta name="language" content={lang} />
+  
+  <!-- Google Fonts with proper preloading -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- SEO -->
+  <!-- SEO Meta Tags -->
   <SEO
     title={title}
     description={seoDescription}
@@ -57,71 +73,436 @@ const seoImage = image || '/og-image.jpg';
       creator: '@aimaster4u',
       site: '@aimaster4u',
       card: 'summary_large_image',
+      title: title,
+      description: seoDescription,
+      image: seoImage,
     }}
     extend={{
       link: [
         { rel: 'canonical', href: Astro.url.toString() },
-        { rel: 'alternate', hreflang: 'vi', href: Astro.url.toString().replace('/en', '') },
-        { rel: 'alternate', hreflang: 'en', href: Astro.url.toString().replace(/^(https?:\/\/[^\/]+)/, '$1/en') },
+        { rel: 'alternate', hreflang: 'vi', href: viUrl },
+        { rel: 'alternate', hreflang: 'en', href: enUrl },
+        { rel: 'alternate', hreflang: 'x-default', href: viUrl },
       ],
       meta: [
-        { name: 'robots', content: 'index, follow' },
+        { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
         { name: 'author', content: 'AI Master 4U' },
-        { name: 'keywords', content: lang === 'vi' ? 'AI, trí tuệ nhân tạo, công cụ AI, blog AI, học máy' : 'AI, artificial intelligence, AI tools, AI blog, machine learning' },
+        { name: 'keywords', content: lang === 'vi' ? 'AI, trí tuệ nhân tạo, công cụ AI, blog AI, học máy, machine learning, ChatGPT, Midjourney' : 'AI, artificial intelligence, AI tools, AI blog, machine learning, ChatGPT, Midjourney' },
+        { name: 'theme-color', content: '#3b82f6' },
+        { name: 'msapplication-TileColor', content: '#3b82f6' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+        { name: 'format-detection', content: 'telephone=no' },
+        // Open Graph additional tags
+        { property: 'og:site_name', content: 'AI Master 4U' },
+        { property: 'og:locale', content: lang === 'vi' ? 'vi_VN' : 'en_US' },
+        { property: 'og:locale:alternate', content: lang === 'vi' ? 'en_US' : 'vi_VN' },
+        // Article specific tags
+        ...(type === 'article' ? [
+          { property: 'article:author', content: 'AI Master 4U' },
+          { property: 'article:publisher', content: 'AI Master 4U' },
+        ] : []),
       ],
     }}
   />
   
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
+  <!-- Structured Data for Website -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "AI Master 4U",
+    "alternateName": lang === 'vi' ? "AI Master 4U - Nền tảng AI Việt Nam" : "AI Master 4U - AI Platform",
+    "url": baseUrl,
+    "description": seoDescription,
+    "inLanguage": lang,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${baseUrl}${lang === 'vi' ? '' : '/en'}/search?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
       "name": "AI Master 4U",
-      "url": "https://aimaster4u.com",
-      "description": seoDescription,
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://aimaster4u.com/search?q={search_term_string}",
-        "query-input": "required name=search_term_string"
+      "url": baseUrl,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${baseUrl}/logo.png`
       }
     }
-  </script>
+  })} />
+
+  <!-- Structured Data for Organization -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "AI Master 4U",
+    "url": baseUrl,
+    "logo": `${baseUrl}/logo.png`,
+    "description": seoDescription,
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "contact@aimaster4u.com",
+      "contactType": "customer service",
+      "availableLanguage": ["Vietnamese", "English"]
+    },
+    "sameAs": [
+      "https://facebook.com/aimaster4u",
+      "https://twitter.com/aimaster4u",
+      "https://linkedin.com/company/aimaster4u"
+    ]
+  })} />
 </head>
-<body class="min-h-screen bg-white font-inter">
+<body class="min-h-screen bg-white font-inter antialiased">
+  <!-- Skip to main content for accessibility -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-lg z-50">
+    {lang === 'vi' ? 'Chuyển đến nội dung chính' : 'Skip to main content'}
+  </a>
+
   <Header />
-  <main>
+  
+  <main id="main-content">
     <slot />
   </main>
+  
   <Footer />
+  
+  <!-- Subscription Popup (conditionally rendered) -->
+  {showPopup && <SubscriptionPopup />}
   
   <!-- Global Scripts -->
   <script>
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
+    // Language persistence and initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set document language attribute
+      const currentLang = document.documentElement.lang;
+      
+      // Store language preference
+      if (currentLang) {
+        localStorage.setItem('preferred_language', currentLang);
+      }
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        });
+      });
+
+      // Add loading states to external links
+      document.querySelectorAll('a[href^="http"]:not([href*="aimaster4u.com"])').forEach(link => {
+        link.addEventListener('click', function() {
+          // Add visual feedback for external links
+          this.style.opacity = '0.7';
+          this.style.pointerEvents = 'none';
+          
+          // Add external link indicator if not present
+          if (!this.querySelector('.external-link-icon')) {
+            const icon = document.createElement('span');
+            icon.className = 'external-link-icon ml-1';
+            icon.innerHTML = '↗';
+            this.appendChild(icon);
+          }
+          
+          setTimeout(() => {
+            this.style.opacity = '1';
+            this.style.pointerEvents = 'auto';
+          }, 2000);
+        });
+        
+        // Add rel attributes for security
+        link.setAttribute('rel', 'noopener noreferrer');
+        link.setAttribute('target', '_blank');
+      });
+
+      // Form validation enhancement
+      const forms = document.querySelectorAll('form');
+      forms.forEach(form => {
+        const inputs = form.querySelectorAll('input[required], textarea[required]');
+        
+        inputs.forEach(input => {
+          // Real-time validation
+          input.addEventListener('blur', validateInput);
+          input.addEventListener('input', clearValidationError);
+        });
+        
+        form.addEventListener('submit', function(e) {
+          let isValid = true;
+          
+          inputs.forEach(input => {
+            if (!validateInput.call(input)) {
+              isValid = false;
+            }
           });
+          
+          if (!isValid) {
+            e.preventDefault();
+          }
+        });
+      });
+
+      function validateInput() {
+        const input = this;
+        const value = input.value.trim();
+        const type = input.type;
+        const name = input.name;
+        
+        // Clear previous errors
+        clearValidationError.call(input);
+        
+        // Required field validation
+        if (input.hasAttribute('required') && !value) {
+          showValidationError(input, getValidationMessage('required'));
+          return false;
         }
+        
+        // Email validation
+        if (type === 'email' && value) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            showValidationError(input, getValidationMessage('email_invalid'));
+            return false;
+          }
+        }
+        
+        return true;
+      }
+      
+      function clearValidationError() {
+        const input = this;
+        input.classList.remove('error');
+        const errorElement = input.parentNode.querySelector('.error-message');
+        if (errorElement) {
+          errorElement.textContent = '';
+        }
+      }
+      
+      function showValidationError(input, message) {
+        input.classList.add('error');
+        let errorElement = input.parentNode.querySelector('.error-message');
+        
+        if (!errorElement) {
+          errorElement = document.createElement('div');
+          errorElement.className = 'error-message text-red-500 text-sm mt-1';
+          input.parentNode.appendChild(errorElement);
+        }
+        
+        errorElement.textContent = message;
+      }
+      
+      function getValidationMessage(key) {
+        const lang = document.documentElement.lang || 'vi';
+        const messages = {
+          vi: {
+            required: 'Trường này là bắt buộc',
+            email_invalid: 'Vui lòng nhập địa chỉ email hợp lệ'
+          },
+          en: {
+            required: 'This field is required',
+            email_invalid: 'Please enter a valid email address'
+          }
+        };
+        
+        return messages[lang]?.[key] || messages.vi[key];
+      }
+
+      // Performance monitoring
+      if ('performance' in window) {
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            if (perfData) {
+              console.log('Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+            }
+          }, 0);
+        });
+      }
+
+      // Accessibility enhancements
+      // Focus management for keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          document.body.classList.add('keyboard-navigation');
+        }
+      });
+      
+      document.addEventListener('mousedown', () => {
+        document.body.classList.remove('keyboard-navigation');
+      });
+
+      // Language switching with proper URL handling
+      const languageSwitchers = document.querySelectorAll('[data-lang-switch]');
+      languageSwitchers.forEach(switcher => {
+        switcher.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetLang = switcher.getAttribute('data-lang-switch');
+          const currentPath = window.location.pathname;
+          
+          let newPath;
+          if (targetLang === 'vi') {
+            // Remove /en prefix for Vietnamese
+            newPath = currentPath.replace(/^\/en/, '') || '/';
+          } else {
+            // Add /en prefix for English
+            newPath = currentPath.startsWith('/en') ? currentPath : `/en${currentPath}`;
+          }
+          
+          // Store language preference
+          localStorage.setItem('preferred_language', targetLang);
+          
+          // Navigate to new URL
+          window.location.href = newPath;
+        });
       });
     });
 
-    // Add loading states to external links
-    document.querySelectorAll('a[href^="http"]').forEach(link => {
-      link.addEventListener('click', function() {
-        this.style.opacity = '0.7';
-        this.style.pointerEvents = 'none';
-        setTimeout(() => {
-          this.style.opacity = '1';
-          this.style.pointerEvents = 'auto';
-        }, 2000);
+    // Error handling for images
+    document.addEventListener('error', (e) => {
+      if (e.target.tagName === 'IMG') {
+        e.target.style.display = 'none';
+        console.warn('Image failed to load:', e.target.src);
+      }
+    }, true);
+
+    // Service Worker registration (if available)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('SW registered: ', registration);
+          })
+          .catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
       });
+    }
+  </script>
+
+  <!-- Analytics and tracking scripts -->
+  <!-- Google Analytics 4 (replace with your tracking ID) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'GA_MEASUREMENT_ID', {
+      page_language: document.documentElement.lang,
+      custom_map: {
+        'custom_parameter_1': 'language'
+      }
     });
   </script>
 </body>
 </html>
+
+<style>
+  /* Accessibility styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  /* Keyboard navigation styles */
+  .keyboard-navigation *:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  /* Form validation styles */
+  .error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+  }
+
+  .error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    min-height: 1.25rem;
+  }
+
+  /* External link styles */
+  .external-link-icon {
+    display: inline-block;
+    font-size: 0.75em;
+    opacity: 0.7;
+  }
+
+  /* Loading states */
+  .loading {
+    opacity: 0.7;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    
+    body {
+      font-size: 12pt;
+      line-height: 1.4;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+    }
+    
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .bg-primary-50 {
+      background-color: #ffffff;
+    }
+    
+    .text-neutral-600 {
+      color: #000000;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>

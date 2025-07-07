@@ -1,0 +1,434 @@
+---
+// Language Implementation Audit Component
+// This component performs comprehensive language validation
+import { getLangFromUrl, useTranslations, validateVietnameseText } from '../utils/i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// Audit results will be logged to console in development
+const auditResults = {
+  language: lang,
+  url: Astro.url.toString(),
+  issues: [],
+  warnings: [],
+  passed: []
+};
+
+// Check if we're in development mode
+const isDev = import.meta.env.DEV;
+---
+
+<!-- Language Audit Component (Development Only) -->
+{isDev && (
+  <div id="language-audit" class="fixed bottom-4 right-4 z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-sm hidden">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="font-semibold text-sm">Language Audit</h3>
+      <button id="close-audit" class="text-gray-500 hover:text-gray-700">×</button>
+    </div>
+    <div id="audit-results" class="text-xs space-y-1">
+      <div class="text-blue-600">Running language audit...</div>
+    </div>
+  </div>
+)}
+
+<script define:vars={{ isDev, lang, auditResults }}>
+  if (isDev) {
+    // Comprehensive Language Audit System
+    class LanguageAudit {
+      constructor() {
+        this.lang = lang;
+        this.auditResults = auditResults;
+        this.auditPanel = document.getElementById('language-audit');
+        this.resultsContainer = document.getElementById('audit-results');
+        this.closeButton = document.getElementById('close-audit');
+        
+        this.init();
+      }
+
+      init() {
+        // Show audit panel
+        if (this.auditPanel) {
+          this.auditPanel.classList.remove('hidden');
+        }
+
+        // Set up close button
+        if (this.closeButton) {
+          this.closeButton.addEventListener('click', () => {
+            this.auditPanel.classList.add('hidden');
+          });
+        }
+
+        // Run audit after page load
+        setTimeout(() => {
+          this.runFullAudit();
+        }, 1000);
+      }
+
+      async runFullAudit() {
+        console.group('🌐 Language Implementation Audit');
+        
+        // 1. Document Language Validation
+        this.auditDocumentLanguage();
+        
+        // 2. Meta Tags Validation
+        this.auditMetaTags();
+        
+        // 3. Content Language Consistency
+        this.auditContentLanguage();
+        
+        // 4. Navigation and UI Elements
+        this.auditNavigationElements();
+        
+        // 5. Form Elements
+        this.auditFormElements();
+        
+        // 6. Vietnamese Character Encoding
+        this.auditVietnameseEncoding();
+        
+        // 7. Language Switching Functionality
+        this.auditLanguageSwitching();
+        
+        // 8. URL Structure
+        this.auditUrlStructure();
+        
+        // 9. Accessibility
+        this.auditAccessibility();
+        
+        // 10. SEO Elements
+        this.auditSeoElements();
+
+        // Display results
+        this.displayResults();
+        
+        console.groupEnd();
+      }
+
+      auditDocumentLanguage() {
+        const htmlLang = document.documentElement.lang;
+        const expectedLang = this.lang;
+        
+        if (htmlLang === expectedLang) {
+          this.addResult('passed', `Document language correctly set to "${htmlLang}"`);
+        } else {
+          this.addResult('issues', `Document language mismatch: expected "${expectedLang}", got "${htmlLang}"`);
+        }
+
+        // Check dir attribute
+        const dir = document.documentElement.dir;
+        if (dir === 'ltr' || dir === '') {
+          this.addResult('passed', 'Text direction correctly set');
+        } else {
+          this.addResult('warnings', `Unexpected text direction: ${dir}`);
+        }
+      }
+
+      auditMetaTags() {
+        const metaTags = {
+          'Content-Language': document.querySelector('meta[http-equiv="Content-Language"]'),
+          'language': document.querySelector('meta[name="language"]'),
+          'og:locale': document.querySelector('meta[property="og:locale"]'),
+        };
+
+        Object.entries(metaTags).forEach(([name, element]) => {
+          if (element) {
+            const content = element.getAttribute('content') || element.getAttribute('property');
+            this.addResult('passed', `${name} meta tag found: ${content}`);
+          } else {
+            this.addResult('warnings', `${name} meta tag missing`);
+          }
+        });
+      }
+
+      auditContentLanguage() {
+        const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div, button, a');
+        let totalElements = 0;
+        let elementsWithContent = 0;
+        let vietnameseElements = 0;
+        let englishElements = 0;
+
+        textElements.forEach(element => {
+          const text = element.textContent?.trim();
+          if (text && text.length > 3) {
+            totalElements++;
+            elementsWithContent++;
+            
+            // Simple language detection
+            if (this.detectVietnamese(text)) {
+              vietnameseElements++;
+            } else if (this.detectEnglish(text)) {
+              englishElements++;
+            }
+          }
+        });
+
+        const vietnamesePercentage = (vietnameseElements / elementsWithContent) * 100;
+        const englishPercentage = (englishElements / elementsWithContent) * 100;
+
+        this.addResult('passed', `Content analysis: ${elementsWithContent} elements with text content`);
+        this.addResult('passed', `Vietnamese content: ${vietnamesePercentage.toFixed(1)}%`);
+        this.addResult('passed', `English content: ${englishPercentage.toFixed(1)}%`);
+
+        // Validate content matches expected language
+        if (this.lang === 'vi' && vietnamesePercentage < 50) {
+          this.addResult('warnings', 'Vietnamese page has low Vietnamese content percentage');
+        } else if (this.lang === 'en' && englishPercentage < 50) {
+          this.addResult('warnings', 'English page has low English content percentage');
+        }
+      }
+
+      auditNavigationElements() {
+        const navElements = document.querySelectorAll('nav a, .nav-link, [role="navigation"] a');
+        let translatedNav = 0;
+        let totalNav = navElements.length;
+
+        navElements.forEach(element => {
+          const text = element.textContent?.trim();
+          if (text) {
+            // Check if navigation text matches expected language
+            if ((this.lang === 'vi' && this.detectVietnamese(text)) ||
+                (this.lang === 'en' && this.detectEnglish(text))) {
+              translatedNav++;
+            }
+          }
+        });
+
+        if (translatedNav === totalNav && totalNav > 0) {
+          this.addResult('passed', `All ${totalNav} navigation elements properly translated`);
+        } else {
+          this.addResult('warnings', `${totalNav - translatedNav}/${totalNav} navigation elements may not be translated`);
+        }
+      }
+
+      auditFormElements() {
+        const formElements = document.querySelectorAll('input[placeholder], textarea[placeholder], label');
+        let translatedForms = 0;
+        let totalForms = formElements.length;
+
+        formElements.forEach(element => {
+          const text = element.getAttribute('placeholder') || element.textContent?.trim();
+          if (text) {
+            if ((this.lang === 'vi' && this.detectVietnamese(text)) ||
+                (this.lang === 'en' && this.detectEnglish(text))) {
+              translatedForms++;
+            }
+          }
+        });
+
+        if (translatedForms === totalForms && totalForms > 0) {
+          this.addResult('passed', `All ${totalForms} form elements properly translated`);
+        } else {
+          this.addResult('warnings', `${totalForms - translatedForms}/${totalForms} form elements may not be translated`);
+        }
+      }
+
+      auditVietnameseEncoding() {
+        if (this.lang !== 'vi') return;
+
+        const vietnameseChars = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/gi;
+        const textContent = document.body.textContent || '';
+        const matches = textContent.match(vietnameseChars);
+
+        if (matches && matches.length > 0) {
+          this.addResult('passed', `Vietnamese characters properly encoded (${matches.length} found)`);
+          
+          // Check for common encoding issues
+          const encodingIssues = textContent.match(/[ÃÂ¡Ã¢Â]/g);
+          if (encodingIssues) {
+            this.addResult('issues', `Potential encoding issues detected: ${encodingIssues.length} problematic characters`);
+          }
+        } else {
+          this.addResult('warnings', 'No Vietnamese characters detected on Vietnamese page');
+        }
+      }
+
+      auditLanguageSwitching() {
+        const languageSwitchers = document.querySelectorAll('[data-lang-switch], .language-switcher a');
+        
+        if (languageSwitchers.length > 0) {
+          this.addResult('passed', `Language switcher found (${languageSwitchers.length} elements)`);
+          
+          // Test language switching functionality
+          languageSwitchers.forEach((switcher, index) => {
+            const href = switcher.getAttribute('href');
+            const langSwitch = switcher.getAttribute('data-lang-switch');
+            
+            if (href) {
+              this.addResult('passed', `Language switcher ${index + 1} has valid href: ${href}`);
+            } else {
+              this.addResult('warnings', `Language switcher ${index + 1} missing href attribute`);
+            }
+          });
+        } else {
+          this.addResult('warnings', 'No language switcher found');
+        }
+      }
+
+      auditUrlStructure() {
+        const currentUrl = window.location.pathname;
+        const expectedPattern = this.lang === 'en' ? /^\/en/ : /^(?!\/en)/;
+        
+        if (expectedPattern.test(currentUrl)) {
+          this.addResult('passed', `URL structure correct for ${this.lang}: ${currentUrl}`);
+        } else {
+          this.addResult('issues', `URL structure incorrect for ${this.lang}: ${currentUrl}`);
+        }
+
+        // Check for alternate language links
+        const alternateLinks = document.querySelectorAll('link[rel="alternate"][hreflang]');
+        if (alternateLinks.length > 0) {
+          this.addResult('passed', `Alternate language links found (${alternateLinks.length})`);
+          alternateLinks.forEach(link => {
+            const hreflang = link.getAttribute('hreflang');
+            const href = link.getAttribute('href');
+            this.addResult('passed', `Alternate link: ${hreflang} -> ${href}`);
+          });
+        } else {
+          this.addResult('warnings', 'No alternate language links found');
+        }
+      }
+
+      auditAccessibility() {
+        // Check for lang attributes on content that differs from page language
+        const elementsWithLang = document.querySelectorAll('[lang]');
+        elementsWithLang.forEach(element => {
+          const elementLang = element.getAttribute('lang');
+          if (elementLang !== this.lang) {
+            this.addResult('passed', `Element with different language properly marked: ${elementLang}`);
+          }
+        });
+
+        // Check for aria-labels and accessibility attributes
+        const ariaElements = document.querySelectorAll('[aria-label], [aria-labelledby], [aria-describedby]');
+        if (ariaElements.length > 0) {
+          this.addResult('passed', `Accessibility attributes found (${ariaElements.length} elements)`);
+        }
+      }
+
+      auditSeoElements() {
+        // Check title
+        const title = document.title;
+        if (title) {
+          const isTranslated = (this.lang === 'vi' && this.detectVietnamese(title)) ||
+                              (this.lang === 'en' && this.detectEnglish(title));
+          if (isTranslated) {
+            this.addResult('passed', `Page title properly translated: "${title}"`);
+          } else {
+            this.addResult('warnings', `Page title may not be translated: "${title}"`);
+          }
+        }
+
+        // Check meta description
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+          const content = metaDesc.getAttribute('content');
+          const isTranslated = (this.lang === 'vi' && this.detectVietnamese(content)) ||
+                              (this.lang === 'en' && this.detectEnglish(content));
+          if (isTranslated) {
+            this.addResult('passed', 'Meta description properly translated');
+          } else {
+            this.addResult('warnings', 'Meta description may not be translated');
+          }
+        }
+
+        // Check Open Graph tags
+        const ogTags = document.querySelectorAll('meta[property^="og:"]');
+        if (ogTags.length > 0) {
+          this.addResult('passed', `Open Graph tags found (${ogTags.length})`);
+        }
+      }
+
+      detectVietnamese(text) {
+        const vietnameseChars = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+        const vietnameseWords = /\b(và|của|trong|với|để|từ|về|cho|theo|như|khi|nếu|hoặc|nhưng|vì|tại|trên|dưới|giữa|sau|trước|bằng|qua|đến|đi|làm|có|là|được|sẽ|đã|đang|chưa|không|rất|nhiều|ít|lớn|nhỏ|tốt|xấu|mới|cũ|cao|thấp|nhanh|chậm|dễ|khó)\b/i;
+        return vietnameseChars.test(text) || vietnameseWords.test(text);
+      }
+
+      detectEnglish(text) {
+        const englishWords = /\b(the|and|or|but|in|on|at|to|for|of|with|by|from|about|into|through|during|before|after|above|below|up|down|out|off|over|under|again|further|then|once|here|there|when|where|why|how|all|any|both|each|few|more|most|other|some|such|no|nor|not|only|own|same|so|than|too|very|can|will|just|should|now)\b/i;
+        return englishWords.test(text) && !/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/.test(text);
+      }
+
+      addResult(type, message) {
+        this.auditResults[type].push(message);
+        console.log(`${type === 'issues' ? '❌' : type === 'warnings' ? '⚠️' : '✅'} ${message}`);
+      }
+
+      displayResults() {
+        if (!this.resultsContainer) return;
+
+        const { issues, warnings, passed } = this.auditResults;
+        const total = issues.length + warnings.length + passed.length;
+        
+        let html = `
+          <div class="mb-2">
+            <div class="text-green-600">✅ ${passed.length} passed</div>
+            <div class="text-yellow-600">⚠️ ${warnings.length} warnings</div>
+            <div class="text-red-600">❌ ${issues.length} issues</div>
+          </div>
+        `;
+
+        if (issues.length > 0) {
+          html += '<div class="text-red-600 font-semibold">Critical Issues:</div>';
+          issues.forEach(issue => {
+            html += `<div class="text-red-500 text-xs">• ${issue}</div>`;
+          });
+        }
+
+        if (warnings.length > 0) {
+          html += '<div class="text-yellow-600 font-semibold mt-2">Warnings:</div>';
+          warnings.slice(0, 3).forEach(warning => {
+            html += `<div class="text-yellow-600 text-xs">• ${warning}</div>`;
+          });
+          if (warnings.length > 3) {
+            html += `<div class="text-xs text-gray-500">... and ${warnings.length - 3} more</div>`;
+          }
+        }
+
+        this.resultsContainer.innerHTML = html;
+
+        // Log summary
+        console.log(`\n📊 Audit Summary: ${passed.length} passed, ${warnings.length} warnings, ${issues.length} issues`);
+        
+        if (issues.length === 0 && warnings.length === 0) {
+          console.log('🎉 Perfect language implementation!');
+        } else if (issues.length === 0) {
+          console.log('✨ Good language implementation with minor warnings');
+        } else {
+          console.log('🔧 Language implementation needs attention');
+        }
+      }
+    }
+
+    // Initialize audit
+    document.addEventListener('DOMContentLoaded', () => {
+      new LanguageAudit();
+    });
+  }
+</script>
+
+<style>
+  #language-audit {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  #language-audit::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  #language-audit::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  #language-audit::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+  }
+
+  #language-audit::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+</style>
